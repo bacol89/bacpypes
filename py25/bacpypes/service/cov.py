@@ -297,8 +297,8 @@ class COVIncrementCriteria(COVDetection):
             self.previous_reported_value = old_value
 
         # see if it changed enough to trigger reporting
-        value_changed = (new_value <= (self.previous_reported_value - self.covIncrement)) \
-            or (new_value >= (self.previous_reported_value + self.covIncrement))
+        value_changed = (new_value <= (self.previous_reported_value - self.obj.covIncrement)) \
+            or (new_value >= (self.previous_reported_value + self.obj.covIncrement))
         if _debug: COVIncrementCriteria._debug("    - value significantly changed: %r", value_changed)
 
         return value_changed
@@ -379,7 +379,7 @@ class LoadControlCriteria(COVDetection):
         )
 
 
-class PulseConverterCriteria(COVDetection):
+class PulseConverterCriteria(COVIncrementCriteria):
 
     properties_tracked = (
         'presentValue',
