@@ -422,7 +422,8 @@ class TestPulseConverter(unittest.TestCase):
             .timeout(5).doc("2-1-5") \
             .call(write_test_pc, 10.0).doc("2-1-6") \
             .receive(SimpleAckPDU).doc("2-1-7") \
-            .timeout(10).doc("2-1-8") \
+            .receive(SimpleAckPDU).doc("2-1-8") \
+            .timeout(10).doc("2-1-9") \
             .success()
 
         # send the subscription request, wait for the ack and the 'instant'
@@ -440,7 +441,8 @@ class TestPulseConverter(unittest.TestCase):
             .receive(ConfirmedCOVNotificationRequest).doc("2-2-3") \
             .set_event("e1").doc("2-2-4") \
             .receive(ConfirmedCOVNotificationRequest).doc("2-2-5") \
-            .timeout(10).doc("2-2-6") \
+            .receive(ConfirmedCOVNotificationRequest).doc("2-2-6") \
+            .timeout(10).doc("2-2-7") \
             .success()
 
         # run the group
