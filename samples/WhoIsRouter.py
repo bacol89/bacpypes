@@ -84,7 +84,7 @@ class WhoIsRouterConsoleCmd(ConsoleCmd):
             return
 
         # give it to the application
-        this_application.request(this_application.nsap.adapters[None], request)
+        this_application.request(this_application.nsap.local_adapter, request)
 
     def do_wirtn(self, args):
         """wirtn <addr> [ <net> ]"""
@@ -102,7 +102,7 @@ class WhoIsRouterConsoleCmd(ConsoleCmd):
             return
 
         # give it to the application
-        this_application.request(this_application.nsap.adapters[None], request)
+        this_application.request(this_application.nsap.local_adapter, request)
 
 #
 #   __main__
