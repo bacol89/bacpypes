@@ -12,7 +12,10 @@ from bacpypes.consolecmd import ConsoleCmd
 from bacpypes.core import run, enable_sleeping
 
 from bacpypes.pdu import Address
-from bacpypes.npdu import InitializeRoutingTable, WhoIsRouterToNetwork, IAmRouterToNetwork
+from bacpypes.npdu import (
+    WhoIsRouterToNetwork, IAmRouterToNetwork,
+    InitializeRoutingTable, InitializeRoutingTableAck,
+    )
 
 from bacpypes.app import BIPNetworkApplication
 
@@ -44,6 +47,11 @@ class WhoIsRouterApplication(BIPNetworkApplication):
 
         if isinstance(npdu, IAmRouterToNetwork):
             print("{} -> {}, {}".format(npdu.pduSource, npdu.pduDestination, npdu.iartnNetworkList))
+
+        elif isinstance(npdu, InitializeRoutingTableAck):
+            print("{} routing table".format(npdu.pduSource))
+            for rte in npdu.irtaTable:
+                print("    {} {} {}".format(rte.rtDNET, rte.rtPortID, rte.rtPortInfo))
 
         BIPNetworkApplication.indication(self, adapter, npdu)
 
