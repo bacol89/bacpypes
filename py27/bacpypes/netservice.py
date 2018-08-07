@@ -11,9 +11,14 @@ from .errors import ConfigurationError
 
 from .comm import Client, Server, bind, \
     ServiceAccessPoint, ApplicationServiceElement
+from .task import FunctionTask
 
 from .pdu import Address, LocalBroadcast, LocalStation, PDU, RemoteStation
-from .npdu import IAmRouterToNetwork, NPDU, WhoIsRouterToNetwork, npdu_types
+from .npdu import (
+    NPDU, npdu_types,
+    IAmRouterToNetwork, WhoIsRouterToNetwork,
+    WhatIsNetworkNumber, NetworkNumberIs,
+    )
 from .apdu import APDU as _APDU
 
 # some debugging
@@ -242,7 +247,7 @@ class NetworkServiceAccessPoint(ServiceAccessPoint, Server, DebugContents):
         if _debug: NetworkServiceAccessPoint._debug("    - adapters[%r]: %r", net, adapter)
 
         # if the address was given, make it the "local" one
-        if address:
+        if address and not self.localAddress:
             self.local_adapter = adapter
             self.local_address = address
 
@@ -332,9 +337,17 @@ class NetworkServiceAccessPoint(ServiceAccessPoint, Server, DebugContents):
 
         # if the network matches the local adapter it's local
         if (dnet == adapter.adapterNet):
-            ### log this, the application shouldn't be sending to a remote station address
-            ### when it's a directly connected network
-            raise RuntimeError("addressing problem")
+            if (npdu.pduDestination.addrType == Address.remoteStationAddr):
+                if _debug: NetworkServiceAccessPoint._debug("    - mapping remote station to local station")
+                npdu.pduDestination = LocalStation(npdu.pduDestination.addrAddr)
+            elif (npdu.pduDestination.addrType == Address.remoteBroadcastAddr):
+                if _debug: NetworkServiceAccessPoint._debug("    - mapping remote broadcast to local broadcast")
+                npdu.pduDestination = LocalBroadcast()
+            else:
+                raise RuntimeError("addressing problem")
+
+            adapter.process_npdu(npdu)
+            return
 
         # get it ready to send when the path is found
         npdu.pduDestination = None
@@ -894,6 +907,9 @@ class NetworkServiceElement(ApplicationServiceElement):
     def what_is_network_number(self, adapter=None, address=None):
         if _debug: NetworkServiceElement._debug("what_is_network_number %r", adapter, address)
 
+        # reference the service access point
+        sap = self.elementService
+
         # a little error checking
         if (adapter is None) and (address is not None):
             raise RuntimeError("inconsistent parameters")
@@ -979,9 +995,6 @@ class NetworkServiceElement(ApplicationServiceElement):
     def NetworkNumberIs(self, adapter, npdu):
         if _debug: NetworkServiceElement._debug("NetworkNumberIs %r %r", adapter, npdu)
 
-        # reference the service access point
-        sap = self.elementService
-
         # if this was not sent as a broadcast, ignore it
         if (npdu.pduDestination.addrType != Address.localBroadcastAddr):
             if _debug: NetworkServiceElement._debug("    - not broadcast")
@@ -997,8 +1010,17 @@ class NetworkServiceElement(ApplicationServiceElement):
         # check to see if the local network is known
         if adapter.adapterNet is None:
             if _debug: NetworkServiceElement._debug("   - local network not known")
+
+            # delete the reference from an unknown network
+            del self.adapters[None]
+
             adapter.adapterNet = npdu.nniNet
             adapter.adapterNetConfigured = npdu.nniFlag
+
+            # we now know what network this is
+            self.adapters[adapter.adapterNet] = adapter
+
+            ###TODO: s/None/net/g in routing tables
             return
 
         # check if this matches what we have
@@ -1011,9 +1033,16 @@ class NetworkServiceElement(ApplicationServiceElement):
             if _debug: NetworkServiceElement._debug("   - doesn't match what we know")
             return
 
+        if _debug: NetworkServiceElement._debug("   - learning something new")
+
+        # delete the reference from the old (learned) network
+        del self.adapters[adapter.adapterNet]
+
         adapter.adapterNet = npdu.nniNet
         adapter.adapterNetConfigured = npdu.nniFlag
-        if _debug: NetworkServiceElement._debug("   - learned something new")
 
-        ###TODO: what about updating the routing tables?
+        # we now know what network this is
+        self.adapters[adapter.adapterNet] = adapter
+
+        ###TODO: s/old/new/g in routing tables
 
