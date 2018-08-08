@@ -211,8 +211,8 @@ class NetworkAdapter(Client, DebugContents):
 @bacpypes_debugging
 class NetworkServiceAccessPoint(ServiceAccessPoint, Server, DebugContents):
 
-    _debug_contents = ('adapters++', 'routers++', 'networks+'
-        , 'localAdapter-', 'localAddress'
+    _debug_contents = ('adapters++', 'pending_nets',
+        'local_adapter-', 'local_address',
         )
 
     def __init__(self, router_info_cache=None, sap=None, sid=None):
@@ -997,6 +997,9 @@ class NetworkServiceElement(ApplicationServiceElement):
     def NetworkNumberIs(self, adapter, npdu):
         if _debug: NetworkServiceElement._debug("NetworkNumberIs %r %r", adapter, npdu)
 
+        # reference the service access point
+        sap = self.elementService
+
         # if this was not sent as a broadcast, ignore it
         if (npdu.pduDestination.addrType != Address.localBroadcastAddr):
             if _debug: NetworkServiceElement._debug("    - not broadcast")
@@ -1011,17 +1014,18 @@ class NetworkServiceElement(ApplicationServiceElement):
 
         # check to see if the local network is known
         if adapter.adapterNet is None:
-            if _debug: NetworkServiceElement._debug("   - local network not known")
+            if _debug: NetworkServiceElement._debug("   - local network not known: %r", list(sap.adapters.keys()))
 
             # delete the reference from an unknown network
-            del self.adapters[None]
+            del sap.adapters[None]
 
             adapter.adapterNet = npdu.nniNet
-            adapter.adapterNetConfigured = npdu.nniFlag
+            adapter.adapterNetConfigured = 0
 
             # we now know what network this is
-            self.adapters[adapter.adapterNet] = adapter
+            sap.adapters[adapter.adapterNet] = adapter
 
+            if _debug: NetworkServiceElement._debug("   - local network learned")
             ###TODO: s/None/net/g in routing tables
             return
 
@@ -1038,13 +1042,13 @@ class NetworkServiceElement(ApplicationServiceElement):
         if _debug: NetworkServiceElement._debug("   - learning something new")
 
         # delete the reference from the old (learned) network
-        del self.adapters[adapter.adapterNet]
+        del sap.adapters[adapter.adapterNet]
 
         adapter.adapterNet = npdu.nniNet
         adapter.adapterNetConfigured = npdu.nniFlag
 
         # we now know what network this is
-        self.adapters[adapter.adapterNet] = adapter
+        sap.adapters[adapter.adapterNet] = adapter
 
         ###TODO: s/old/new/g in routing tables
 
