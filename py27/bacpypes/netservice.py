@@ -976,8 +976,9 @@ class NetworkServiceElement(ApplicationServiceElement):
             # send to adapters we are configured to know
             adapter_list = []
             for xadapter in sap.adapters.values():
-                if (xadapter.adapterNet is not None) and (adapter.adapterNetConfigured == 1):
+                if (xadapter.adapterNet is not None) and (xadapter.adapterNetConfigured == 1):
                     adapter_list.append(xadapter)
+        if _debug: NetworkServiceElement._debug("    - adapter_list: %r", adapter_list)
 
         # loop through the adapter(s)
         for xadapter in adapter_list:
@@ -988,6 +989,7 @@ class NetworkServiceElement(ApplicationServiceElement):
             # build a broadcast annoucement
             nni = NetworkNumberIs(net=xadapter.adapterNet, flag=xadapter.adapterNetConfigured)
             nni.pduDestination = LocalBroadcast()
+            if _debug: NetworkServiceElement._debug("    - nni: %r", nni)
 
             # send it to the adapter
             self.request(xadapter, nni)
