@@ -14,11 +14,8 @@ from .comm import Client, Server, bind, \
 from .task import FunctionTask
 
 from .pdu import Address, LocalBroadcast, LocalStation, PDU, RemoteStation
-from .npdu import (
-    NPDU, npdu_types,
-    IAmRouterToNetwork, WhoIsRouterToNetwork,
-    WhatIsNetworkNumber, NetworkNumberIs,
-    )
+from .npdu import NPDU, npdu_types, IAmRouterToNetwork, WhoIsRouterToNetwork, \
+    WhatIsNetworkNumber, NetworkNumberIs
 from .apdu import APDU as _APDU
 
 # some debugging
