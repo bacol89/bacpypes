@@ -698,6 +698,21 @@ def ArrayOf(klass, fixed_length=None, prototype=None):
     global _array_of_map
     global _array_of_classes, _sequence_of_classes
 
+    # check the parameters for consistency
+    if issubclass(klass, Atomic):
+        if prototype is None:
+            pass
+        elif not klass.is_valid(prototype):
+            raise ValueError("prototype %r not valid for %s" % (prototype, klass.__name__))
+    else:
+        if prototype is None:
+            ### TODO This should be an error, a prototype should always be
+            ### required for non-atomic types, even if it's only klass()
+            ### for a default object which will be deep copied
+            pass
+        elif not isinstance(prototype, klass):
+            raise ValueError("prototype %r not valid for %s" % (prototype, klass.__name__))
+
     # build a signature of the parameters
     array_signature = (klass, fixed_length, prototype)
 
@@ -885,7 +900,7 @@ def ArrayOf(klass, fixed_length=None, prototype=None):
 
             # check the length
             if self.fixed_length is not None:
-                if self.fixed_length != len(value):
+                if self.fixed_length != len(new_value):
                     raise ValueError("invalid array length")
 
             # update the length
@@ -1197,7 +1212,7 @@ class Choice(object):
 
     def dict_contents(self, use_dict=None, as_class=dict):
         """Return the contents of an object as a dict."""
-        if _debug: _log.debug("dict_contents use_dict=%r as_class=%r", use_dict, as_class)
+        if _debug: Choice._debug("dict_contents use_dict=%r as_class=%r", use_dict, as_class)
 
         # make/extend the dictionary of content
         if use_dict is None:

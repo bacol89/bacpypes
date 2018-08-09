@@ -265,6 +265,29 @@ class TestIntegerArray5(unittest.TestCase):
         ary[1] = 10
         assert ary[1] == 10
 
+    def test_codec(self):
+        if _debug: TestIntegerArray5._debug("test_codec")
+
+        # test array contents
+        ary_value = [1, 2, 3, 4, 5]
+
+        # create an array
+        ary = IntegerArray5(ary_value)
+        if _debug: TestIntegerArray5._debug("    - ary: %r", ary)
+
+        # encode it in a tag list
+        tag_list = TagList()
+        ary.encode(tag_list)
+        if _debug: TestIntegerArray5._debug("    - tag_list: %r", tag_list)
+
+        # create another sequence and decode the tag list
+        ary = IntegerArray()
+        ary.decode(tag_list)
+        if _debug: TestIntegerArray5._debug("    - ary %r", ary)
+
+        # value matches
+        assert ary.value[1:] == ary_value
+
 
 # array of a sequence
 SimpleSequenceArray = ArrayOf(SimpleSequence)
