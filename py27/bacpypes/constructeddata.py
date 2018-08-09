@@ -762,7 +762,7 @@ def ArrayOf(klass, fixed_length=None, prototype=None):
 
         def append(self, value):
             if self.fixed_length is not None:
-                raise RuntimeError("fixed length array")
+                raise TypeError("fixed length array")
 
             if issubclass(self.subtype, Atomic):
                 pass
@@ -793,7 +793,7 @@ def ArrayOf(klass, fixed_length=None, prototype=None):
             if item == 0:
                 if (self.fixed_length is not None):
                     if (value != self.value[0]):
-                        raise RuntimeError("fixed length array")
+                        raise TypeError("fixed length array")
                     return
 
                 self.fix_length(value)
@@ -802,7 +802,7 @@ def ArrayOf(klass, fixed_length=None, prototype=None):
 
         def __delitem__(self, item):
             if self.fixed_length is not None:
-                raise RuntimeError("fixed length array")
+                raise TypeError("fixed length array")
 
             # no wrapping index
             if (item < 1) or (item > self.value[0]):
@@ -826,7 +826,7 @@ def ArrayOf(klass, fixed_length=None, prototype=None):
 
         def remove(self, item):
             if self.fixed_length is not None:
-                raise RuntimeError("fixed length array")
+                raise TypeError("fixed length array")
 
             # find the index of the item and delete it
             indx = self.index(item)

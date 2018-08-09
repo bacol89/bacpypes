@@ -191,7 +191,7 @@ class TestIntegerArray5(unittest.TestCase):
         if _debug: TestIntegerArray5._debug("    - ary: %r", ary)
 
         # append an integer
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TypeError):
             ary.append(2)
 
     def test_delete_item(self):
@@ -202,7 +202,7 @@ class TestIntegerArray5(unittest.TestCase):
         if _debug: TestIntegerArray5._debug("    - ary: %r", ary)
 
         # delete something
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TypeError):
             del ary[2]
 
     def test_index_item(self):
@@ -227,7 +227,7 @@ class TestIntegerArray5(unittest.TestCase):
         if _debug: TestIntegerArray5._debug("    - ary: %r", ary)
 
         # remove something
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TypeError):
             ary.remove(4)
 
     def test_resize(self):
@@ -241,7 +241,7 @@ class TestIntegerArray5(unittest.TestCase):
         ary[0] = 5
 
         # changing it to something else fails
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TypeError):
             ary[0] = 4
 
     def test_get_item(self):

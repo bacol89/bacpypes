@@ -329,7 +329,7 @@ class Property:
                 arry[arrayIndex] = value
             except IndexError:
                 raise ExecutionError(errorClass='property', errorCode='invalidArrayIndex')
-            except RuntimeError:
+            except TypeError:
                 raise ExecutionError(errorClass='property', errorCode='valueOutOfRange')
 
             # check for monitors, call each one with the old and new value
